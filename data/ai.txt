@@ -1,0 +1,7 @@
+Artificial Intelligence (AI) is the field of computer science focused on creating systems that can perform tasks that normally require human intelligence.
+
+Machine learning is a branch of AI where computers learn patterns from data instead of being explicitly programmed.
+
+Deep learning is a type of machine learning that uses neural networks with many layers.
+
+Large Language Models (LLMs), such as Gemini, GPT, and Llama, are deep learning models trained on massive amounts of text to understand and generate human language.
