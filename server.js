@@ -29,6 +29,10 @@ app.post("/chat", async (req, res) => {
   try {
     const question = req.body.question;
 
+console.log("Question:", question);
+console.log("Time:", new Date().toISOString());
+console.log("IP:", req.ip);
+
     const lowerQuestion = question.toLowerCase();
 
 let selectedKnowledge = theory;
