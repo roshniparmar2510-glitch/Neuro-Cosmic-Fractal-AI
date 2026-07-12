@@ -1,3 +1,38 @@
+const uploadBtn = document.getElementById("uploadBtn");
+
+uploadBtn.addEventListener("click", async () => {
+  const file = document.getElementById("pdfFile").files[0];
+
+  if (!file) {
+    alert("Please select a PDF first.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("pdf", file);
+
+  try {
+    const response = await fetch("/upload-pdf", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+
+    alert("✅ PDF uploaded successfully!");
+    console.log(data.text);
+
+  } catch (err) {
+    console.error(err);
+    alert("Upload failed.");
+  }
+});
+
 window.onload = () => {
   const chat = document.getElementById("chat");
   const history = localStorage.getItem("chatHistory");

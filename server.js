@@ -6,6 +6,9 @@ const path = require("path");
 const { GoogleGenAI } = require("@google/genai");
 const fs = require("fs");
 
+const multer = require("multer");
+const pdfParse = require("pdf-parse");
+
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY
 });
@@ -17,6 +20,10 @@ const neuroscience = fs.readFileSync("data/neuroscience.txt", "utf8");
 const profile = fs.readFileSync("data/profile.txt", "utf8");
 
 const app = express();
+
+const upload = multer({
+  dest: "uploads/"
+});
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
@@ -96,6 +103,26 @@ const prompt =
     console.error(error);
     res.status(500).json({
       answer: "Something went wrong."
+    });
+  }
+});
+
+
+app.post("/upload-pdf", upload.single("pdf"), async (req, res) => {
+  try {
+    const dataBuffer = fs.readFileSync(req.file.path);
+    const pdf = await pdfParse(dataBuffer);
+
+    res.json({
+      text: pdf.text
+    });
+
+    fs.unlinkSync(req.file.path);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Failed to read PDF."
     });
   }
 });
