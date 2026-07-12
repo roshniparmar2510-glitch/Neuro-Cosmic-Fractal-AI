@@ -19,6 +19,8 @@ const aiKnowledge = fs.readFileSync("data/ai.txt", "utf8");
 const neuroscience = fs.readFileSync("data/neuroscience.txt", "utf8");
 const profile = fs.readFileSync("data/profile.txt", "utf8");
 
+let uploadedPdfText = "";
+
 const app = express();
 
 const upload = multer({
@@ -87,6 +89,8 @@ if (
 const prompt =
   "Knowledge:\n" +
   selectedKnowledge +
+  "\n\nUploaded PDF:\n" +
+  uploadedPdfText +
   "\n\nUser Question:\n" +
   question;
 
@@ -113,9 +117,11 @@ app.post("/upload-pdf", upload.single("pdf"), async (req, res) => {
     const dataBuffer = fs.readFileSync(req.file.path);
     const pdf = await pdfParse(dataBuffer);
 
-    res.json({
-      text: pdf.text
-    });
+    uploadedPdfText = pdf.text;
+
+res.json({
+  message: "PDF uploaded successfully."
+});
 
     fs.unlinkSync(req.file.path);
 
