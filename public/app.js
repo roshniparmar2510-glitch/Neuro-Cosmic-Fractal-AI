@@ -1,3 +1,12 @@
+window.onload = () => {
+  const chat = document.getElementById("chat");
+  const history = localStorage.getItem("chatHistory");
+
+  if (history) {
+    chat.innerHTML = history;
+  }
+};
+
 async function sendQuestion() {
   const questionBox = document.getElementById("question");
   const chat = document.getElementById("chat");
@@ -41,4 +50,6 @@ ${data.answer}
 `;
 
   chat.scrollTop = chat.scrollHeight;
+
+localStorage.setItem("chatHistory", chat.innerHTML);
 }
