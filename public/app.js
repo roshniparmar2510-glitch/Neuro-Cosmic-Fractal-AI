@@ -41,45 +41,13 @@ if (uploadBtn) {
 
       alert("✅ PDF uploaded successfully!");
       console.log(data.text);
+
     } catch (err) {
       console.error(err);
       alert("Upload failed.");
     }
   });
 }
-
-uploadBtn.addEventListener("click", async () => {
-  const file = document.getElementById("pdfFile").files[0];
-
-  if (!file) {
-    alert("Please select a PDF first.");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("pdf", file);
-
-  try {
-    const response = await fetch("/upload-pdf", {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await response.json();
-
-    if (data.error) {
-      alert(data.error);
-      return;
-    }
-
-    alert("✅ PDF uploaded successfully!");
-    console.log(data.text);
-
-  } catch (err) {
-    console.error(err);
-    alert("Upload failed.");
-  }
-});
 
 window.onload = () => {
   const chat = document.getElementById("chat");
@@ -107,32 +75,32 @@ ${question}
   questionBox.value = "";
 
   const aiMessage = document.createElement("div");
-aiMessage.className = "message ai";
-chat.appendChild(aiMessage);
-
-typeWriter(aiMessage, data.answer);
-
-  const response = await fetch("/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      question: question
-    })
-  });
-
-  const data = await response.json();
-
-  document.getElementById("thinking").remove();
-
-  chat.innerHTML += `
-<div class="message ai">
-${data.answer}
-</div>
-`;
+  aiMessage.className = "message ai";
+  aiMessage.innerHTML = "Neuro-Cosmic AI is thinking...";
+  chat.appendChild(aiMessage);
 
   chat.scrollTop = chat.scrollHeight;
 
-localStorage.setItem("chatHistory", chat.innerHTML);
+  try {
+    const response = await fetch("/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        question: question
+      })
+    });
+
+    const data = await response.json();
+
+    aiMessage.innerHTML = "";
+    typeWriter(aiMessage, data.answer);
+
+    localStorage.setItem("chatHistory", chat.innerHTML);
+
+  } catch (err) {
+    console.error(err);
+    aiMessage.innerHTML = "❌ Something went wrong.";
+  }
 }
