@@ -1,3 +1,17 @@
+function typeWriter(element, text, speed = 15) {
+  let i = 0;
+
+  function typing() {
+    if (i < text.length) {
+      element.innerHTML += text.charAt(i);
+      i++;
+      setTimeout(typing, speed);
+    }
+  }
+
+  typing();
+}
+
 const uploadBtn = document.getElementById("uploadBtn");
 
 uploadBtn.addEventListener("click", async () => {
@@ -58,11 +72,11 @@ ${question}
 
   questionBox.value = "";
 
-  chat.innerHTML += `
-<div class="message ai" id="thinking">
-Neuro-Cosmic AI is thinking...
-</div>
-`;
+  const aiMessage = document.createElement("div");
+aiMessage.className = "message ai";
+chat.appendChild(aiMessage);
+
+typeWriter(aiMessage, data.answer);
 
   const response = await fetch("/chat", {
     method: "POST",
