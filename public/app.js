@@ -14,6 +14,40 @@ function typeWriter(element, text, speed = 15) {
 
 const uploadBtn = document.getElementById("uploadBtn");
 
+if (uploadBtn) {
+  uploadBtn.addEventListener("click", async () => {
+    const file = document.getElementById("pdfFile").files[0];
+
+    if (!file) {
+      alert("Please select a PDF first.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("pdf", file);
+
+    try {
+      const response = await fetch("/upload-pdf", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+
+      alert("✅ PDF uploaded successfully!");
+      console.log(data.text);
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed.");
+    }
+  });
+}
+
 uploadBtn.addEventListener("click", async () => {
   const file = document.getElementById("pdfFile").files[0];
 
