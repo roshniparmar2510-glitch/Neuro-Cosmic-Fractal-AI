@@ -39,6 +39,11 @@ app.post("/chat", async (req, res) => {
     const question = req.body.question;
 
 console.log("Question:", question);
+    console.log("Uploaded PDF length:", uploadedPdfText.length);
+
+    const lowerQuestion = question.toLowerCase();
+
+console.log("Question:", question);
 console.log("Time:", new Date().toISOString());
 console.log("IP:", req.ip);
 
@@ -86,8 +91,21 @@ if (
   selectedKnowledge = theory;
 }
 
+const systemPrompt = `
+You are Neuro-Cosmic AI created by Rosy Parmar.
+
+If the user asks questions about an uploaded PDF,
+answer ONLY from the uploaded PDF.
+
+If the answer is not found in the PDF, say:
+"I couldn't find that information in the uploaded PDF."
+
+Do not make up answers.
+`;
+
 const prompt =
-  "Knowledge:\n" +
+  systemPrompt +
+  "\n\nKnowledge:\n" +
   selectedKnowledge +
   "\n\nUploaded PDF:\n" +
   uploadedPdfText +
@@ -103,7 +121,7 @@ const prompt =
       answer: response.text
     });
 
-  } catch (error) {
+ } catch (error) {
     console.error(error);
     res.status(500).json({
       answer: "Something went wrong."
