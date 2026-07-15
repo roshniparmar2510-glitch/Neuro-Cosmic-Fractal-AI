@@ -47,8 +47,6 @@ console.log("Question:", question);
 console.log("Time:", new Date().toISOString());
 console.log("IP:", req.ip);
 
-    const lowerQuestion = question.toLowerCase();
-
 let selectedKnowledge = theory;
 
 if (
