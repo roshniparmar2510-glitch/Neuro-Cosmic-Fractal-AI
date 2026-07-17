@@ -130,6 +130,14 @@ const prompt =
 
 app.post("/upload-pdf", upload.single("pdf"), async (req, res) => {
   try {
+console.log("File:", req.file);
+
+if (!req.file) {
+  return res.status(400).json({
+    error: "No PDF file received."
+  });
+}
+
     const dataBuffer = fs.readFileSync(req.file.path);
     const pdf = await pdfParse(dataBuffer);
 
