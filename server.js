@@ -131,6 +131,7 @@ const prompt =
 app.post("/upload-pdf", upload.single("pdf"), async (req, res) => {
   try {
 console.log("File:", req.file);
+console.log("Headers:", req.headers["content-type"]);
 
 if (!req.file) {
   return res.status(400).json({
