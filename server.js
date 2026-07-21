@@ -101,14 +101,33 @@ If the answer is not found in the PDF, say:
 Do not make up answers.
 `;
 
-const prompt =
-  systemPrompt +
-  "\n\nKnowledge:\n" +
-  selectedKnowledge +
-  "\n\nUploaded PDF:\n" +
-  uploadedPdfText +
-  "\n\nUser Question:\n" +
-  question;
+let prompt;
+
+if (uploadedPdfText.length > 0) {
+
+  prompt = `
+${systemPrompt}
+
+Uploaded PDF:
+${uploadedPdfText}
+
+Question:
+${question}
+`;
+
+} else {
+
+  prompt = `
+${systemPrompt}
+
+Knowledge:
+${selectedKnowledge}
+
+Question:
+${question}
+`;
+
+}
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -120,11 +139,17 @@ const prompt =
     });
 
  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      answer: "Something went wrong."
-    });
+  console.error("===== CHAT ERROR =====");
+  console.error(error);
+
+  if (error.stack) {
+    console.error(error.stack);
   }
+
+  res.status(500).json({
+    answer: error.message || "Something went wrong."
+  });
+}
 });
 
 
@@ -134,6 +159,13 @@ console.log("File:", req.file);
 console.log("Headers:", req.headers["content-type"]);
 
 if (!req.file) {
+if (req.file.mimetype !== "application/pdf") {
+  fs.unlinkSync(req.file.path);
+
+  return res.status(400).json({
+    error: "Please upload a PDF file only."
+  });
+}
   return res.status(400).json({
     error: "No PDF file received."
   });
@@ -141,6 +173,14 @@ if (!req.file) {
 
     const dataBuffer = fs.readFileSync(req.file.path);
     const pdf = await pdfParse(dataBuffer);
+
+uploadedPdfText = pdf.text.trim();
+
+if (!uploadedPdfText) {
+  return res.status(400).json({
+    error: "This PDF contains no readable text. It may be a scanned PDF."
+  });
+}
 
     uploadedPdfText = pdf.text;
 
@@ -151,6 +191,14 @@ res.json({
     fs.unlinkSync(req.file.path);
 
   } catch (error) {
+
+console.error(error);
+
+if (error.status === 503) {
+    return res.status(503).json({
+        answer: "Gemini is busy. Please try again in a few seconds."
+    });
+}
     console.error(error);
     res.status(500).json({
       error: "Failed to read PDF."
