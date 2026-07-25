@@ -20,6 +20,7 @@ const neuroscience = fs.readFileSync("data/neuroscience.txt", "utf8");
 const profile = fs.readFileSync("data/profile.txt", "utf8");
 
 let uploadedPdfText = "";
+let uploadedPdfChunks = [];
 
 const app = express();
 
@@ -183,6 +184,19 @@ if (!uploadedPdfText) {
 }
 
     uploadedPdfText = pdf.text;
+
+uploadedPdfChunks = [];
+
+const chunkSize = 1000;
+
+for (let i = 0; i < uploadedPdfText.length; i += chunkSize) {
+  uploadedPdfChunks.push(
+    uploadedPdfText.substring(i, i + chunkSize)
+  );
+}
+
+console.log("PDF Characters:", uploadedPdfText.length);
+console.log("Total Chunks:", uploadedPdfChunks.length);
 
 res.json({
   message: "PDF uploaded successfully."
