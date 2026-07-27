@@ -197,13 +197,23 @@ Do not make up answers.
 
 let prompt;
 
-if (uploadedPdfText.length > 0) {
+const usePdf =
+  uploadedPdfText.length > 0 &&
+  (
+    lowerQuestion.includes("pdf") ||
+    lowerQuestion.includes("question") ||
+    lowerQuestion.includes("chapter") ||
+    lowerQuestion.includes("page") ||
+    lowerQuestion.includes("summarize")
+  );
+
+if (usePdf) {
 
   prompt = `
 ${systemPrompt}
 
 Uploaded PDF:
-${uploadedPdfText}
+${pdfContext}
 
 Question:
 ${question}
