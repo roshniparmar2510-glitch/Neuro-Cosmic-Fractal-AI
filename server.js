@@ -186,26 +186,25 @@ if (
 const systemPrompt = `
 You are Neuro-Cosmic AI created by Rosy Parmar.
 
-If the user asks questions about an uploaded PDF,
-answer ONLY from the uploaded PDF.
+If relevant information exists in the uploaded PDF:
 
-If the answer is not found in the PDF, say:
-"I couldn't find that information in the uploaded PDF."
+- Answer using the PDF.
+- If the user asks to explain, summarize or translate, do so using the PDF content.
+- If the user asks in Gujarati, answer in Gujarati.
+- If the user asks in Hindi, answer in Hindi.
+- If the user asks in English, answer in English.
 
-Do not make up answers.
+If the uploaded PDF does not contain the answer,
+then use your own knowledge to answer naturally.
+
+Never invent facts about the PDF.
 `;
 
 let prompt;
 
 const usePdf =
   uploadedPdfText.length > 0 &&
-  (
-    lowerQuestion.includes("pdf") ||
-    lowerQuestion.includes("question") ||
-    lowerQuestion.includes("chapter") ||
-    lowerQuestion.includes("page") ||
-    lowerQuestion.includes("summarize")
-  );
+  pdfContext.length > 0;
 
 if (usePdf) {
 
