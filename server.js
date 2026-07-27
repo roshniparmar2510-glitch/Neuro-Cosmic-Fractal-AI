@@ -22,7 +22,81 @@ const profile = fs.readFileSync("data/profile.txt", "utf8");
 let uploadedPdfText = "";
 let uploadedPdfChunks = [];
 
+function splitIntoChunks(text, chunkSize = 1000) {
+  const chunks = [];
+
+  for (let i = 0; i < text.length; i += chunkSize) {
+    chunks.push(text.slice(i, i + chunkSize));
+  }
+
+  return chunks;
+}
+
+function findRelevantChunks(question, chunks, maxChunks = 5) {
+  const words = question
+    .toLowerCase()
+    .split(/\W+/)
+    .filter(Boolean);
+
+  const scored = chunks.map(chunk => {
+    let score = 0;
+    const lower = chunk.toLowerCase();
+
+    for (const word of words) {
+      if (lower.includes(word)) score++;
+    }
+
+    return { chunk, score };
+  });
+
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, maxChunks)
+    .map(x => x.chunk)
+    .join("\n\n");
+}
+
 const app = express();
+
+function searchKnowledge(question) {
+  const query = question.toLowerCase();
+
+  const allChunks = [
+    ...uploadedPdfChunks,
+    theory,
+    physics,
+    aiKnowledge,
+    neuroscience,
+    profile
+  ];
+
+  const scored = allChunks.map(chunk => {
+    let score = 0;
+
+    const words = query.split(/\s+/);
+
+    for (const word of words) {
+      if (word.length < 3) continue;
+
+      const matches = (
+        chunk.toLowerCase().match(
+          new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")
+        ) || []
+      ).length;
+
+      score += matches;
+    }
+
+    return { chunk, score };
+  });
+
+  return scored
+    .filter(x => x.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6)
+    .map(x => x.chunk)
+    .join("\n\n");
+}
 
 const upload = multer({
   dest: "uploads/"
@@ -38,6 +112,25 @@ app.get("/", (req, res) => {
 app.post("/chat", async (req, res) => {
   try {
     const question = req.body.question;
+
+let pdfContext = uploadedPdfText;
+
+if (uploadedPdfChunks.length > 0) {
+  const lowerQuestion = question.toLowerCase();
+
+  const matchedChunks = uploadedPdfChunks.filter(chunk =>
+    chunk.toLowerCase().includes(lowerQuestion) ||
+    lowerQuestion.split(" ").some(word =>
+      word.length > 3 && chunk.toLowerCase().includes(word)
+    )
+  );
+
+  if (matchedChunks.length > 0) {
+    pdfContext = matchedChunks.slice(0, 5).join("\n\n");
+  }
+}
+
+console.log("Context length:", pdfContext.length);
 
 console.log("Question:", question);
     console.log("Uploaded PDF length:", uploadedPdfText.length);
@@ -184,6 +277,12 @@ if (!uploadedPdfText) {
 }
 
     uploadedPdfText = pdf.text;
+
+uploadedPdfChunks = splitIntoChunks(uploadedPdfText);
+
+console.log("PDF Characters:", uploadedPdfText.length);
+console.log("Total Chunks:", uploadedPdfChunks.length);
+
 
 uploadedPdfChunks = [];
 
